@@ -37,8 +37,8 @@ class JSONField(TextAreaField):
 
 class GeoJSONField(JSONField):
     widget = LeafletWidget()
-    
-    def __init__(self, label=None, validators=None, geometry_type="GEOMETRY", srid='-1', session=None, **kwargs):
+
+    def __init__(self, label=None, validators=None, geometry_type="GEOMETRY", srid='-1', session=None, geocoding=None, **kwargs):
         super(GeoJSONField, self).__init__(label, validators, **kwargs)
         self.web_srid = 4326
         self.srid = srid
@@ -48,7 +48,8 @@ class GeoJSONField(JSONField):
         	self.transform_srid = self.srid
         self.geometry_type = geometry_type.upper()
         self.session = session
-    
+        self.geocoding = geocoding
+
     def _value(self):
         if self.raw_data:
             return self.raw_data[0]
@@ -58,7 +59,7 @@ class GeoJSONField(JSONField):
             else:
                 self.data = self.session.scalar(func.ST_AsGeoJson(func.ST_Transform(self.data, self.web_srid)))
         return super(GeoJSONField, self)._value()
-    
+
     def process_formdata(self, valuelist):
         super(GeoJSONField, self).process_formdata(valuelist)
         if str(self.data) is '':
